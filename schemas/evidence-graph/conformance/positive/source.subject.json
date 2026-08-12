@@ -1,0 +1,31 @@
+{
+  "schema": "evidence-graph/v1",
+  "document": {
+    "id": "doc-source-0001",
+    "type": "subject-document",
+    "issuer": "https://builder.example/workflow@refs/heads/develop",
+    "created_at": "2026-08-12T00:00:00Z"
+  },
+  "subject": {
+    "id": "subject-source-0001",
+    "type": "source",
+    "primary_digest": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+  },
+  "relations": [],
+  "evidence": [],
+  "policy": {
+    "bundle": "policy-bundle-0001",
+    "decision": "allow"
+  },
+  "lifecycle": {
+    "status": "verified"
+  },
+  "integrity": {
+    "canonical_payload_digest": "sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+    "signature": {
+      "issuer": "https://builder.example/workflow@refs/heads/develop",
+      "reference": "evidence.example/subject-source-0001/integrity.sigstore.json",
+      "digest": "sha256:fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+    }
+  }
+}

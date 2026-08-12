@@ -1,0 +1,5 @@
+pre-push:
+  parallel: false
+  commands:
+    supply-chain-governance-source-quality:
+      run: go run -mod=readonly ./cmd/build

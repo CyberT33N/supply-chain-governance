@@ -1,0 +1,46 @@
+{
+  "schema": "evidence-graph/v1",
+  "document": {
+    "id": "doc-operation-0001",
+    "type": "subject-document",
+    "issuer": "https://builder.example/operations-workflow@refs/heads/main",
+    "created_at": "2026-08-12T03:00:00Z"
+  },
+  "subject": {
+    "id": "subject-operation-0001",
+    "type": "operation",
+    "primary_digest": "sha256:00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
+  },
+  "relations": [
+    {
+      "type": "revokes",
+      "target_subject_id": "subject-artifact-0001",
+      "target_digest": "sha256:8899aabbccddeeff00112233445566778899aabbccddeeff0011223344556677"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_type": "revocation",
+      "subject_id": "subject-operation-0001",
+      "immutable_reference": "evidence.example/operation-0001/revocation.json",
+      "digest": "sha256:fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+      "issuer": "https://builder.example/operations-workflow@refs/heads/main",
+      "issued_at": "2026-08-12T03:01:00Z"
+    }
+  ],
+  "policy": {
+    "bundle": "policy-bundle-0001",
+    "decision": "deny"
+  },
+  "lifecycle": {
+    "status": "verified"
+  },
+  "integrity": {
+    "canonical_payload_digest": "sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+    "signature": {
+      "issuer": "https://builder.example/operations-workflow@refs/heads/main",
+      "reference": "evidence.example/operation-0001/integrity.sigstore.json",
+      "digest": "sha256:00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
+    }
+  }
+}

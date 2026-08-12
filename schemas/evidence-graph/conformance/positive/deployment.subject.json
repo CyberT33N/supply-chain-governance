@@ -1,0 +1,48 @@
+{
+  "schema": "evidence-graph/v1",
+  "document": {
+    "id": "doc-deployment-0001",
+    "type": "subject-document",
+    "issuer": "https://builder.example/deployment-workflow@refs/heads/main",
+    "created_at": "2026-08-12T02:00:00Z"
+  },
+  "subject": {
+    "id": "subject-deployment-0001",
+    "type": "deployment",
+    "primary_digest": "sha256:fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+  },
+  "relations": [
+    {
+      "type": "deploys",
+      "target_subject_id": "subject-promotion-0001",
+      "target_digest": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_type": "test",
+      "subject_id": "subject-deployment-0001",
+      "immutable_reference": "evidence.example/deployment-0001/health.json",
+      "digest": "sha256:8899aabbccddeeff00112233445566778899aabbccddeeff0011223344556677",
+      "issuer": "https://builder.example/deployment-workflow@refs/heads/main",
+      "issued_at": "2026-08-12T02:01:00Z"
+    }
+  ],
+  "policy": {
+    "bundle": "policy-bundle-0001",
+    "decision": "allow"
+  },
+  "lifecycle": {
+    "status": "verified",
+    "target_lane": "staging",
+    "phase_references": ["run-0001", "attempt-1"]
+  },
+  "integrity": {
+    "canonical_payload_digest": "sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+    "attestation": {
+      "issuer": "https://builder.example/deployment-workflow@refs/heads/main",
+      "reference": "evidence.example/deployment-0001/integrity.intoto.jsonl",
+      "digest": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    }
+  }
+}

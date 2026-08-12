@@ -1,0 +1,13 @@
+{
+  "schema": "dependency-policy/v1",
+  "ecosystem": "python",
+  "admission": {
+    "required_evidence": ["sbom", "provenance", "attestation", "test", "scan"],
+    "max_cvss": 7.0,
+    "blocked_licenses": ["AGPL-3.0", "SSPL-1.0"]
+  },
+  "exceptions": [],
+  "revocation": {
+    "download_block": true
+  }
+}

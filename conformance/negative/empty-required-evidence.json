@@ -1,0 +1,7 @@
+{
+  "schema": "dependency-policy/v1",
+  "ecosystem": "go",
+  "admission": {"required_evidence": []},
+  "exceptions": [],
+  "revocation": {"download_block": true}
+}

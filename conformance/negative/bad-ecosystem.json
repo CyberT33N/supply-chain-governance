@@ -1,0 +1,7 @@
+{
+  "schema": "dependency-policy/v1",
+  "ecosystem": "node",
+  "admission": {"required_evidence": ["sbom"]},
+  "exceptions": [],
+  "revocation": {"download_block": true}
+}

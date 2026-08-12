@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CyberT33N/supply-chain-governance/schemas/dependency-policy/v1/policy.schema.json",
+  "title": "dependency-policy/v1 document",
+  "description": "Canonical dependency-policy/v1 admission and revocation policy. Exceptions are always time-bounded and revocation is always enforced actively before download.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "ecosystem", "admission", "exceptions", "revocation"],
+  "properties": {
+    "schema": {
+      "const": "dependency-policy/v1"
+    },
+    "ecosystem": {
+      "enum": ["go", "npm", "python"]
+    },
+    "admission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_evidence"],
+      "properties": {
+        "required_evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": ["sbom", "signature", "provenance", "attestation", "test", "scan", "approval", "exception", "policy", "quality", "revocation"]
+          }
+        },
+        "max_cvss": {"type": "number", "minimum": 0, "maximum": 10},
+        "blocked_licenses": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "exceptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["reference", "expires_at"],
+        "properties": {
+          "reference": {"type": "string", "minLength": 1},
+          "expires_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    "revocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["download_block"],
+      "properties": {
+        "download_block": {"const": true}
+      }
+    }
+  }
+}
