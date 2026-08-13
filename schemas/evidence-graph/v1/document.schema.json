@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CyberT33N/supply-chain-governance/schemas/evidence-graph/v1/document.schema.json",
+  "title": "evidence-graph/v1 subject document",
+  "description": "Canonical evidence-graph/v1 subject document envelope. Append-only on document level: new fields or evidence types may only be introduced additively and as optional without changing the semantics of existing required fields.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "document", "subject", "relations", "evidence", "policy", "lifecycle", "integrity"],
+  "properties": {
+    "schema": {
+      "const": "evidence-graph/v1"
+    },
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "issuer", "created_at"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "type": {"type": "string", "minLength": 1},
+        "issuer": {"type": "string", "minLength": 1},
+        "created_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "primary_digest"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "type": {
+          "enum": ["source", "dependency-resolution", "build", "artifact", "promotion", "deployment", "operation"]
+        },
+        "primary_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "target_subject_id"],
+        "properties": {
+          "type": {
+            "enum": ["resolves", "built-from", "produces", "attests", "promotes", "deploys", "revalidates", "revokes", "supersedes", "quarantines"]
+          },
+          "target_subject_id": {"type": "string", "minLength": 1},
+          "target_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_type", "subject_id", "immutable_reference", "digest", "issuer", "issued_at"],
+        "properties": {
+          "evidence_type": {
+            "enum": ["sbom", "signature", "provenance", "attestation", "test", "scan", "approval", "exception", "policy", "quality", "revocation"]
+          },
+          "subject_id": {"type": "string", "minLength": 1},
+          "immutable_reference": {"type": "string", "minLength": 1},
+          "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+          "issuer": {"type": "string", "minLength": 1},
+          "issued_at": {"type": "string", "format": "date-time"},
+          "expires_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bundle", "decision"],
+      "properties": {
+        "bundle": {"type": "string", "minLength": 1},
+        "decision": {"enum": ["allow", "deny"]},
+        "exception": {"type": "string", "minLength": 1},
+        "approval": {"type": "string", "minLength": 1}
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "enum": ["not-recorded", "pending", "verified", "failed", "revoked", "quarantined", "superseded"]
+        },
+        "target_lane": {"type": "string", "minLength": 1},
+        "phase_references": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["canonical_payload_digest"],
+      "properties": {
+        "canonical_payload_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "signature": {"$ref": "#/$defs/cryptoProof"},
+        "attestation": {"$ref": "#/$defs/cryptoProof"}
+      },
+      "oneOf": [
+        {"required": ["signature"]},
+        {"required": ["attestation"]}
+      ]
+    }
+  },
+  "$defs": {
+    "cryptoProof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["issuer", "reference", "digest"],
+      "properties": {
+        "issuer": {"type": "string", "minLength": 1},
+        "reference": {"type": "string", "minLength": 1},
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    }
+  }
+}

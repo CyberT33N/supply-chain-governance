@@ -1,0 +1,7 @@
+{
+  "schema": "dependency-policy/v1",
+  "ecosystem": "go",
+  "admission": {"required_evidence": ["sbom"]},
+  "exceptions": [{"reference": "github_pat_abc", "expires_at": "2027-01-01T00:00:00Z"}],
+  "revocation": {"download_block": true}
+}

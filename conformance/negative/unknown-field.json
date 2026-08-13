@@ -1,0 +1,8 @@
+{
+  "schema": "dependency-policy/v1",
+  "unexpected": true,
+  "ecosystem": "go",
+  "admission": {"required_evidence": ["sbom"]},
+  "exceptions": [],
+  "revocation": {"download_block": true}
+}

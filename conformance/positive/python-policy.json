@@ -1,0 +1,17 @@
+{
+  "schema": "dependency-policy/v1",
+  "ecosystem": "python",
+  "admission": {
+    "required_evidence": ["sbom", "provenance", "test"],
+    "max_cvss": 0
+  },
+  "exceptions": [
+    {
+      "reference": "exceptions/python-0001.json",
+      "expires_at": "2026-11-12T00:00:00Z"
+    }
+  ],
+  "revocation": {
+    "download_block": true
+  }
+}

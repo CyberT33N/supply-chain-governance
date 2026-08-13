@@ -1,0 +1,166 @@
+package main
+
+import (
+	"bytes"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+var (
+	testDigestA = strings.Repeat("a", 64)
+	testDigestB = strings.Repeat("b", 64)
+	testDigestC = strings.Repeat("c", 64)
+)
+
+var validVectorDocument = `{
+  "schema": "evidence-graph/v1",
+  "document": {"id": "doc-1", "type": "subject-document", "issuer": "issuer-1", "created_at": "2026-08-12T00:00:00Z"},
+  "subject": {"id": "sub-1", "type": "artifact", "primary_digest": "sha256:` + testDigestA + `"},
+  "relations": [],
+  "evidence": [],
+  "policy": {"bundle": "bundle-1", "decision": "allow"},
+  "lifecycle": {"status": "pending"},
+  "integrity": {"canonical_payload_digest": "sha256:` + testDigestB + `", "signature": {"issuer": "issuer-1", "reference": "ref-1", "digest": "sha256:` + testDigestC + `"}}
+}`
+
+var validPolicyDocument = `{
+  "schema": "dependency-policy/v1",
+  "ecosystem": "go",
+  "admission": {"required_evidence": ["sbom"]},
+  "exceptions": [],
+  "revocation": {"download_block": true}
+}`
+
+func restoreSeams(t *testing.T) {
+	t.Helper()
+	originalExit := exitProcess
+	originalArgs := commandArgs
+	originalRoot := vectorRoot
+	t.Cleanup(func() {
+		exitProcess = originalExit
+		commandArgs = originalArgs
+		vectorRoot = originalRoot
+	})
+}
+
+func writeFile(t *testing.T, root string, name string, content string) {
+	t.Helper()
+	path := filepath.Join(root, filepath.FromSlash(name))
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func validVectorRoot(t *testing.T) string {
+	t.Helper()
+	root := t.TempDir()
+	writeFile(t, root, "schemas/evidence-graph/conformance/positive/ok.json", validVectorDocument)
+	writeFile(t, root, "schemas/evidence-graph/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "conformance/positive/ok.json", validPolicyDocument)
+	writeFile(t, root, "conformance/negative/bad.json", `{"schema": "nope"}`)
+	for _, ecosystem := range []string{"go", "npm", "python"} {
+		writeFile(t, root, "policies/dependency/"+ecosystem+"/policy.json", validPolicyDocument)
+	}
+	return root
+}
+
+func TestMainExitsWithRunResult(t *testing.T) {
+	restoreSeams(t)
+	exitCode := -1
+	exitProcess = func(code int) { exitCode = code }
+	commandArgs = []string{"check-conformance"}
+	vectorRoot = validVectorRoot(t)
+
+	main()
+
+	if exitCode != 0 {
+		t.Fatalf("main() exit code = %d, want 0", exitCode)
+	}
+}
+
+func TestMainRejectsArguments(t *testing.T) {
+	restoreSeams(t)
+	exitCode := -1
+	exitProcess = func(code int) { exitCode = code }
+	commandArgs = []string{"check-conformance", "unexpected"}
+	vectorRoot = validVectorRoot(t)
+
+	main()
+
+	if exitCode != 2 {
+		t.Fatalf("main() exit code = %d, want 2", exitCode)
+	}
+}
+
+func TestRunFailsWhenVectorSetFails(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, root, "schemas/evidence-graph/conformance/positive/ok.json", validVectorDocument)
+	writeFile(t, root, "schemas/evidence-graph/conformance/negative/.keep", "")
+	writeFile(t, root, "conformance/positive/ok.json", validPolicyDocument)
+	writeFile(t, root, "conformance/negative/bad.json", `{"schema": "nope"}`)
+	for _, ecosystem := range []string{"go", "npm", "python"} {
+		writeFile(t, root, "policies/dependency/"+ecosystem+"/policy.json", validPolicyDocument)
+	}
+
+	var stdout, stderr bytes.Buffer
+	code := run(nil, root, &stdout, &stderr)
+	if code != 1 {
+		t.Fatalf("run() = %d, want 1", code)
+	}
+	if !strings.Contains(stderr.String(), "no JSON vectors") {
+		t.Fatalf("stderr = %q, want empty vector directory error", stderr.String())
+	}
+}
+
+func TestRunFailsWhenShippedPolicyIsMissing(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, root, "schemas/evidence-graph/conformance/positive/ok.json", validVectorDocument)
+	writeFile(t, root, "schemas/evidence-graph/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "conformance/positive/ok.json", validPolicyDocument)
+	writeFile(t, root, "conformance/negative/bad.json", `{"schema": "nope"}`)
+
+	var stdout, stderr bytes.Buffer
+	code := run(nil, root, &stdout, &stderr)
+	if code != 1 {
+		t.Fatalf("run() = %d, want 1", code)
+	}
+	if !strings.Contains(stderr.String(), "read shipped policy") {
+		t.Fatalf("stderr = %q, want shipped policy read error", stderr.String())
+	}
+}
+
+func TestRunFailsWhenShippedPolicyIsInvalid(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, root, "schemas/evidence-graph/conformance/positive/ok.json", validVectorDocument)
+	writeFile(t, root, "schemas/evidence-graph/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "conformance/positive/ok.json", validPolicyDocument)
+	writeFile(t, root, "conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "policies/dependency/go/policy.json", `{"schema": "nope"}`)
+	writeFile(t, root, "policies/dependency/npm/policy.json", validPolicyDocument)
+	writeFile(t, root, "policies/dependency/python/policy.json", validPolicyDocument)
+
+	var stdout, stderr bytes.Buffer
+	code := run(nil, root, &stdout, &stderr)
+	if code != 1 {
+		t.Fatalf("run() = %d, want 1", code)
+	}
+	if !strings.Contains(stderr.String(), "not conformant") {
+		t.Fatalf("stderr = %q, want shipped policy conformance error", stderr.String())
+	}
+}
+
+func TestRunSuccess(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := run(nil, validVectorRoot(t), &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("run() = %d, want 0; stderr = %q", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "conformant") {
+		t.Fatalf("stdout = %q, want success message", stdout.String())
+	}
+}

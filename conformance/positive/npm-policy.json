@@ -1,0 +1,12 @@
+{
+  "schema": "dependency-policy/v1",
+  "ecosystem": "npm",
+  "admission": {
+    "required_evidence": ["sbom", "provenance", "test"],
+    "blocked_licenses": ["AGPL-3.0"]
+  },
+  "exceptions": [],
+  "revocation": {
+    "download_block": true
+  }
+}
