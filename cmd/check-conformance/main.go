@@ -8,8 +8,8 @@ import (
 	"io/fs"
 	"os"
 
-	"github.com/CyberT33N/supply-chain-governance/internal/dependencypolicy"
-	"github.com/CyberT33N/supply-chain-governance/internal/evidencegraph"
+	"github.com/t33n-software/supply-chain-governance/internal/dependencypolicy"
+	"github.com/t33n-software/supply-chain-governance/internal/evidencegraph"
 )
 
 var (
