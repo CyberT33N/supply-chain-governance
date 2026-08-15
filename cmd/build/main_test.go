@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -92,11 +93,15 @@ func TestRunRejectsArguments(t *testing.T) {
 
 func TestRunWithNilContextUsesBackground(t *testing.T) {
 	var stdout, stderr bytes.Buffer
-	code := run(nil, nil, &stdout, &stderr,
+	code := run(testNilContext(), nil, &stdout, &stderr,
 		fakeRunnerOK(""), fakeFinderOK(nil), fakeReaderOK(), fakeFormatterIdentity(), fakeCreatorOK())
 	if code != 0 {
 		t.Fatalf("run() = %d, want 0; stderr = %q", code, stderr.String())
 	}
+}
+
+func testNilContext() context.Context {
+	return nil
 }
 
 func TestRunStopsWhenFormattingFails(t *testing.T) {
@@ -178,11 +183,19 @@ func TestRunSuccessExecutesEveryGate(t *testing.T) {
 	for _, required := range []string{
 		"go mod verify",
 		"go mod tidy -diff",
+		"go -C tools mod download",
+		"go -C tools mod verify",
+		"go -C tools mod tidy -diff",
+		"go tool -modfile tools/go.mod staticcheck ./...",
 		"go test -mod=readonly ./...",
 		"go run -mod=readonly ./cmd/check-conformance",
 		"go run -mod=readonly ./cmd/check-coverage",
 		"go test -mod=readonly -race ./...",
 		"go vet ./...",
+		"go tool -modfile tools/go.mod govulncheck ./...",
+		"go test -mod=readonly ./internal/evidencegraph -run=^$ -fuzz=FuzzParseDocument -fuzztime=50000x -parallel=1",
+		"go test -mod=readonly ./internal/dependencypolicy -run=^$ -fuzz=FuzzParsePolicy -fuzztime=50000x -parallel=1",
+		"go tool -modfile tools/go.mod lefthook validate",
 		"go build -mod=readonly -trimpath -o " + linuxSourceGatePath + " ./cmd/build",
 		"go version -m " + linuxSourceGatePath,
 	} {
@@ -192,6 +205,51 @@ func TestRunSuccessExecutesEveryGate(t *testing.T) {
 	}
 	if !strings.Contains(stdout.String(), "completed successfully") {
 		t.Fatalf("stdout = %q, want success message", stdout.String())
+	}
+}
+
+func TestRunSuccessOrdersSecurityAndFuzzGates(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	executed := make([]string, 0)
+	recorder := func(_ context.Context, _ []string, executable string, arguments ...string) ([]byte, error) {
+		executed = append(executed, executable+" "+strings.Join(arguments, " "))
+		return nil, nil
+	}
+	code := run(context.Background(), nil, &stdout, &stderr,
+		recorder, fakeFinderOK(nil), fakeReaderOK(), fakeFormatterIdentity(), fakeCreatorOK())
+	if code != 0 {
+		t.Fatalf("run() = %d, want 0; stderr = %q", code, stderr.String())
+	}
+
+	orderedSteps := []string{
+		"go mod verify",
+		"go mod tidy -diff",
+		"go -C tools mod download",
+		"go -C tools mod verify",
+		"go -C tools mod tidy -diff",
+		"go tool -modfile tools/go.mod staticcheck ./...",
+		"go test -mod=readonly ./...",
+		"go run -mod=readonly ./cmd/check-conformance",
+		"go run -mod=readonly ./cmd/check-coverage",
+		"go test -mod=readonly -race ./...",
+		"go vet ./...",
+		"go tool -modfile tools/go.mod govulncheck ./...",
+		"go test -mod=readonly ./internal/evidencegraph -run=^$ -fuzz=FuzzParseDocument -fuzztime=50000x -parallel=1",
+		"go test -mod=readonly ./internal/dependencypolicy -run=^$ -fuzz=FuzzParsePolicy -fuzztime=50000x -parallel=1",
+		"go tool -modfile tools/go.mod lefthook validate",
+		"go build -mod=readonly -trimpath -o " + linuxSourceGatePath + " ./cmd/build",
+		"go version -m " + linuxSourceGatePath,
+	}
+	previous := -1
+	for _, expected := range orderedSteps {
+		index := slices.Index(executed, expected)
+		if index < 0 {
+			t.Fatalf("executed steps do not contain %q:\n%s", expected, strings.Join(executed, "\n"))
+		}
+		if index < previous {
+			t.Fatalf("step %q executed at position %d, after position %d; want increasing order", expected, index, previous)
+		}
+		previous = index
 	}
 }
 
