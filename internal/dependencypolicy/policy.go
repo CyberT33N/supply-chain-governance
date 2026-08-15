@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/CyberT33N/supply-chain-governance/internal/evidencegraph"
+	"github.com/t33n-software/supply-chain-governance/internal/evidencegraph"
 )
 
 // SchemaID is the canonical dependency policy schema identifier.

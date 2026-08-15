@@ -1,4 +1,4 @@
-module github.com/CyberT33N/supply-chain-governance
+module github.com/t33n-software/supply-chain-governance
 
 go 1.26
 

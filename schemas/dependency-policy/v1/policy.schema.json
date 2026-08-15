@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/CyberT33N/supply-chain-governance/schemas/dependency-policy/v1/policy.schema.json",
+  "$id": "https://github.com/t33n-software/supply-chain-governance/schemas/dependency-policy/v1/policy.schema.json",
   "title": "dependency-policy/v1 document",
   "description": "Canonical dependency-policy/v1 admission and revocation policy. Exceptions are always time-bounded and revocation is always enforced actively before download.",
   "type": "object",

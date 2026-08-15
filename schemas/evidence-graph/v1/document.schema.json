@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/CyberT33N/supply-chain-governance/schemas/evidence-graph/v1/document.schema.json",
+  "$id": "https://github.com/t33n-software/supply-chain-governance/schemas/evidence-graph/v1/document.schema.json",
   "title": "evidence-graph/v1 subject document",
   "description": "Canonical evidence-graph/v1 subject document envelope. Append-only on document level: new fields or evidence types may only be introduced additively and as optional without changing the semantics of existing required fields.",
   "type": "object",
