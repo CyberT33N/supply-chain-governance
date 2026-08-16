@@ -106,6 +106,26 @@ func sourceQualitySteps() []step {
 			arguments:  []string{"mod", "tidy", "-diff"},
 		},
 		{
+			name:       "download build tool dependencies",
+			executable: "go",
+			arguments:  []string{"-C", "tools", "mod", "download"},
+		},
+		{
+			name:       "verify build tool dependencies",
+			executable: "go",
+			arguments:  []string{"-C", "tools", "mod", "verify"},
+		},
+		{
+			name:       "verify build tool metadata",
+			executable: "go",
+			arguments:  []string{"-C", "tools", "mod", "tidy", "-diff"},
+		},
+		{
+			name:       "run lint",
+			executable: "go",
+			arguments:  []string{"tool", "-modfile", "tools/go.mod", "staticcheck", "./..."},
+		},
+		{
 			name:       "run unit tests",
 			executable: "go",
 			arguments:  []string{"test", "-mod=readonly", "./..."},
@@ -129,6 +149,26 @@ func sourceQualitySteps() []step {
 			name:       "run static analysis",
 			executable: "go",
 			arguments:  []string{"vet", "./..."},
+		},
+		{
+			name:       "run vulnerability analysis",
+			executable: "go",
+			arguments:  []string{"tool", "-modfile", "tools/go.mod", "govulncheck", "./..."},
+		},
+		{
+			name:       "fuzz evidence graph document parser",
+			executable: "go",
+			arguments:  []string{"test", "-mod=readonly", "./internal/evidencegraph", "-run=^$", "-fuzz=FuzzParseDocument", "-fuzztime=50000x", "-parallel=1"},
+		},
+		{
+			name:       "fuzz dependency policy parser",
+			executable: "go",
+			arguments:  []string{"test", "-mod=readonly", "./internal/dependencypolicy", "-run=^$", "-fuzz=FuzzParsePolicy", "-fuzztime=50000x", "-parallel=1"},
+		},
+		{
+			name:       "validate Lefthook configuration",
+			executable: "go",
+			arguments:  []string{"tool", "-modfile", "tools/go.mod", "lefthook", "validate"},
 		},
 	}
 }

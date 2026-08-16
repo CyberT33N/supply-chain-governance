@@ -38,6 +38,18 @@ go run -mod=readonly ./cmd/build
 
 Every executable Go package must reach exactly 100.0% statement coverage.
 
+`cmd/build` is the full source-level gate: formatting, module checksums and
+metadata, the pinned build tool module, lint (staticcheck), unit tests,
+conformance vectors, exact 100% statement coverage, race detector, static
+analysis, fail-closed vulnerability analysis (govulncheck), fuzz smoke lanes
+for the strict evidence-graph and dependency-policy parsers, Lefthook
+configuration validation, Linux/AMD64 build, and module provenance.
+
+The Go toolchain is pinned exactly (`toolchain go1.26.6`,
+`GOTOOLCHAIN=local`); no lane downloads a toolchain at build time. CI re-runs
+the full gate daily so newly disclosed vulnerabilities fail closed even
+without source changes.
+
 ## Repository layout
 
 - `schemas/evidence-graph/v1/` contains the portable JSON Schema artifact.
