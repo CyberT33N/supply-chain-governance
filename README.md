@@ -61,12 +61,13 @@ without source changes.
 - `exceptions/` contains top-level time-bounded exception records.
 - `cmd/` contains the build, coverage, and conformance gate tooling.
 - `internal/` contains the validators and whitebox contract tests.
-- `docs/` contains architecture, development, and GitHub Ruleset
-  documentation.
+- `docs/` contains architecture, development, and hosting-platform
+  convention documentation.
 
 ## Governance
 
 Governed changes land through ticket branches and pull requests into
-`develop`. `main` is the production and control-plane truth. See
-`docs/hosting-platforms/github/rulesets/` for the importable shared-line
-Rulesets and their import timing.
+`develop`. `main` is the production and control-plane truth. Branch
+governance is bound through the organization-level rule-sets; see
+`docs/conventions/hosting-plattform/github/rule-sets/` for the canonical
+source and the rule-set family of this repository.
