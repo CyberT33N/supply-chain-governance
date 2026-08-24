@@ -51,6 +51,11 @@
         "package": "./internal/dependencypolicy",
         "target": "FuzzParsePolicy",
         "time": "50000x"
+      },
+      {
+        "package": "./internal/capabilitypack",
+        "target": "FuzzParsePack",
+        "time": "50000x"
       }
     ]
   }

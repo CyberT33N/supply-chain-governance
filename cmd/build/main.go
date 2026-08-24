@@ -171,6 +171,11 @@ func sourceQualitySteps() []step {
 			arguments:  []string{"test", "-mod=readonly", "./internal/dependencypolicy", "-run=^$", "-fuzz=FuzzParsePolicy", "-fuzztime=50000x", "-parallel=1"},
 		},
 		{
+			name:       "fuzz capability pack parser",
+			executable: "go",
+			arguments:  []string{"test", "-mod=readonly", "./internal/capabilitypack", "-run=^$", "-fuzz=FuzzParsePack", "-fuzztime=50000x", "-parallel=1"},
+		},
+		{
 			name:       "validate Lefthook configuration",
 			executable: "go",
 			arguments:  []string{"tool", "-modfile", "tools/go.mod", "lefthook", "validate"},

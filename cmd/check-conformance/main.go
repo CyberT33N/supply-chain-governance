@@ -1,5 +1,5 @@
 // Command check-conformance runs every conformance vector set and validates
-// the shipped dependency policies.
+// the shipped dependency policies and capability pack descriptors.
 package main
 
 import (
@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 
+	"github.com/t33n-software/supply-chain-governance/internal/capabilitypack"
 	"github.com/t33n-software/supply-chain-governance/internal/dependencypolicy"
 	"github.com/t33n-software/supply-chain-governance/internal/evidencegraph"
 )
@@ -56,11 +57,27 @@ func conformanceSets() []vectorSet {
 			expectValid: false,
 			parse:       dependencypolicy.ValidatePolicy,
 		},
+		{
+			name:        "capability-pack positive vectors",
+			directory:   "capabilities/infrastructure/opentofu/conformance/positive",
+			expectValid: true,
+			parse:       capabilitypack.ValidatePack,
+		},
+		{
+			name:        "capability-pack negative vectors",
+			directory:   "capabilities/infrastructure/opentofu/conformance/negative",
+			expectValid: false,
+			parse:       capabilitypack.ValidatePack,
+		},
 	}
 }
 
 func shippedPolicyEcosystems() []string {
 	return []string{"go", "npm", "python"}
+}
+
+func shippedPackDescriptors() []string {
+	return []string{"capabilities/infrastructure/opentofu/v1/pack.json"}
 }
 
 func run(arguments []string, root string, stdout io.Writer, stderr io.Writer) int {
@@ -93,6 +110,18 @@ func run(arguments []string, root string, stdout io.Writer, stderr io.Writer) in
 			return 1
 		}
 	}
-	fmt.Fprintln(stdout, "All conformance vectors and shipped policies are conformant.")
+	for _, name := range shippedPackDescriptors() {
+		fmt.Fprintln(stdout, "==> shipped capability pack", name)
+		data, err := fs.ReadFile(fsys, name)
+		if err != nil {
+			fmt.Fprintf(stderr, "read shipped capability pack %q: %v\n", name, err)
+			return 1
+		}
+		if err := capabilitypack.ValidatePack(data); err != nil {
+			fmt.Fprintf(stderr, "shipped capability pack %q is not conformant: %v\n", name, err)
+			return 1
+		}
+	}
+	fmt.Fprintln(stdout, "All conformance vectors, shipped policies, and shipped capability packs are conformant.")
 	return 0
 }

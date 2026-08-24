@@ -273,6 +273,8 @@ func TestConformanceVectorsAndShippedPoliciesArePresent(t *testing.T) {
 		repositoryPath("schemas", "evidence-graph", "conformance", "negative"),
 		repositoryPath("conformance", "positive"),
 		repositoryPath("conformance", "negative"),
+		repositoryPath("capabilities", "infrastructure", "opentofu", "conformance", "positive"),
+		repositoryPath("capabilities", "infrastructure", "opentofu", "conformance", "negative"),
 	} {
 		entries, err := os.ReadDir(directory)
 		if err != nil {
@@ -288,6 +290,11 @@ func TestConformanceVectorsAndShippedPoliciesArePresent(t *testing.T) {
 		if _, err := os.Stat(policyPath); err != nil {
 			t.Fatalf("missing shipped policy %q: %v", policyPath, err)
 		}
+	}
+
+	packDescriptor := repositoryPath("capabilities", "infrastructure", "opentofu", "v1", "pack.json")
+	if _, err := os.Stat(packDescriptor); err != nil {
+		t.Fatalf("missing shipped capability pack descriptor %q: %v", packDescriptor, err)
 	}
 }
 
@@ -312,6 +319,26 @@ func TestJSONSchemasStayInSyncWithValidators(t *testing.T) {
 	} {
 		if !strings.Contains(policySchema, required) {
 			t.Fatalf("policy.schema.json does not contain %q", required)
+		}
+	}
+
+	packSchema := readRepositoryFile(t, filepath.Join("schemas", "capability-pack", "v1", "capability-pack.schema.json"))
+	for _, required := range []string{
+		"capability-pack/v1", "provisioning", "recipe", "artifacts", "sha256", "signature",
+		"discovery", "fileGlob", "assertions", "gates", "repository", "per-root",
+	} {
+		if !strings.Contains(packSchema, required) {
+			t.Fatalf("capability-pack.schema.json does not contain %q", required)
+		}
+	}
+
+	configSchema := readRepositoryFile(t, filepath.Join("schemas", "quality-gate-config", "v4", "quality-gate-config.schema.json"))
+	for _, required := range []string{
+		"quality-gate-config/v4", `"const": 4`, "language", "version", "extends",
+		"^[a-z0-9][a-z0-9-]*@[0-9]+$", "gates", "project", "scratch",
+	} {
+		if !strings.Contains(configSchema, required) {
+			t.Fatalf("quality-gate-config.schema.json does not contain %q", required)
 		}
 	}
 }
