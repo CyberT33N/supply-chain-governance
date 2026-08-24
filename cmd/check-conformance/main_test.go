@@ -97,6 +97,17 @@ func TestMainRejectsArguments(t *testing.T) {
 	}
 }
 
+func TestRunPrintsVersion(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := run([]string{"--version"}, t.TempDir(), &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("run() = %d, want 0", code)
+	}
+	if stdout.String() != "check-conformance devel\n" {
+		t.Fatalf("stdout = %q, want version output", stdout.String())
+	}
+}
+
 func TestRunFailsWhenVectorSetFails(t *testing.T) {
 	root := t.TempDir()
 	writeFile(t, root, "schemas/evidence-graph/conformance/positive/ok.json", validVectorDocument)

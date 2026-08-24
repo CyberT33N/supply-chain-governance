@@ -16,6 +16,7 @@ var (
 	exitProcess = os.Exit
 	commandArgs = os.Args
 	vectorRoot  = "."
+	version     = "devel"
 )
 
 func main() {
@@ -63,6 +64,10 @@ func shippedPolicyEcosystems() []string {
 }
 
 func run(arguments []string, root string, stdout io.Writer, stderr io.Writer) int {
+	if len(arguments) == 1 && arguments[0] == "--version" {
+		fmt.Fprintf(stdout, "check-conformance %s\n", version)
+		return 0
+	}
 	if len(arguments) != 0 {
 		fmt.Fprintln(stderr, "usage: check-conformance")
 		return 2

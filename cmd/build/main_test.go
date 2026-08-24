@@ -91,6 +91,18 @@ func TestRunRejectsArguments(t *testing.T) {
 	}
 }
 
+func TestRunPrintsVersion(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := run(context.Background(), []string{"--version"}, &stdout, &stderr,
+		fakeRunnerOK(""), fakeFinderOK(nil), fakeReaderOK(), fakeFormatterIdentity(), fakeCreatorOK())
+	if code != 0 {
+		t.Fatalf("run() = %d, want 0", code)
+	}
+	if stdout.String() != "build devel\n" {
+		t.Fatalf("stdout = %q, want version output", stdout.String())
+	}
+}
+
 func TestRunWithNilContextUsesBackground(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	code := run(testNilContext(), nil, &stdout, &stderr,
