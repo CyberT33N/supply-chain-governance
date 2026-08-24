@@ -22,8 +22,8 @@ module metadata, build tool download, build tool checksums, build tool
 metadata, lint (staticcheck), unit tests, conformance vectors, exact 100%
 statement coverage, race detector, static analysis, fail-closed
 vulnerability analysis (govulncheck), fuzz smoke lanes for the strict
-evidence-graph and dependency-policy parsers, Lefthook configuration
-validation, Linux/AMD64 build, and module provenance.
+evidence-graph, dependency-policy, and capability-pack parsers, Lefthook
+configuration validation, Linux/AMD64 build, and module provenance.
 
 ## Build tooling
 
@@ -49,7 +49,10 @@ closed even without source changes.
 - every negative `evidence-graph/v1` vector is rejected;
 - every positive and negative `dependency-policy/v1` vector behaves as
   classified;
-- every shipped policy under `policies/dependency/` is conformant.
+- every shipped policy under `policies/dependency/` is conformant;
+- every positive and negative `capability-pack/v1` vector under
+  `capabilities/<area>/<capability>/conformance/` behaves as classified;
+- every shipped pack descriptor under `capabilities/` is conformant.
 
 Empty vector directories fail closed. A vector that changes classification
 fails the gate.
