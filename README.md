@@ -50,6 +50,15 @@ The Go toolchain is pinned exactly (`toolchain go1.26.6`,
 the full gate daily so newly disclosed vulnerabilities fail closed even
 without source changes.
 
+In CI the repository is a tenant of the canonical repo surface: the three
+shared-line workflows (`ci.yml`, `codeql.yml`, `dependency-review.yml`) are
+byte-identical callers of the repository-governance home, and the canonical
+quality gate of the go-quality-authority territory home runs through the
+tooling module. The `repo-bindings.json` manifest binds the adoption (home
+pin, fleet classes, caller and file hashes, config-seam and tool-catalog
+versions), and the `Canonical conformance` check re-proves it fail-closed on
+every shared-line change.
+
 ## Repository layout
 
 - `schemas/evidence-graph/v1/` contains the portable JSON Schema artifact.
@@ -61,6 +70,9 @@ without source changes.
 - `exceptions/` contains top-level time-bounded exception records.
 - `cmd/` contains the build, coverage, and conformance gate tooling.
 - `internal/` contains the validators and whitebox contract tests.
+- `repo-bindings.json` binds the canonical repo-surface adoption (home pin,
+  fleet classes, caller and file hashes, config-seam and tool-catalog
+  versions).
 - `docs/` contains architecture, development, and hosting-platform
   convention documentation.
 
