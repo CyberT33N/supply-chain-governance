@@ -1,0 +1,27 @@
+{
+  "schema": "capability-pack/v1",
+  "capability": "opentofu",
+  "area": "infrastructure",
+  "version": 1,
+  "summary": "Plain HTTP artifact transport is never bound.",
+  "provisioning": {
+    "kind": "recipe",
+    "tool": "tofu",
+    "version": "1.12.5",
+    "environment": {},
+    "artifacts": {
+      "linux-amd64": {
+        "url": "http://example.invalid/tofu_1.12.5_linux_amd64.zip",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "discovery": {
+    "roots": {"fileGlob": "**/*.tf"},
+    "excludeDirs": []
+  },
+  "assertions": [],
+  "gates": [
+    {"name": "opentofu-validate", "command": "tofu", "args": ["validate"], "scope": "per-root"}
+  ]
+}

@@ -33,6 +33,28 @@ var validPolicyDocument = `{
   "revocation": {"download_block": true}
 }`
 
+var validPackDescriptor = `{
+  "schema": "capability-pack/v1",
+  "capability": "opentofu",
+  "area": "infrastructure",
+  "version": 1,
+  "summary": "OpenTofu infrastructure gates.",
+  "provisioning": {
+    "kind": "recipe",
+    "tool": "tofu",
+    "version": "1.12.5",
+    "environment": {},
+    "artifacts": {
+      "linux-amd64": {"url": "https://example.invalid/tofu.zip", "sha256": "` + testDigestA + `"}
+    }
+  },
+  "discovery": {"roots": {"fileGlob": "**/*.tf"}, "excludeDirs": []},
+  "assertions": [],
+  "gates": [
+    {"name": "opentofu-validate", "command": "tofu", "args": ["validate"], "scope": "per-root"}
+  ]
+}`
+
 func restoreSeams(t *testing.T) {
 	t.Helper()
 	originalExit := exitProcess
@@ -63,6 +85,9 @@ func validVectorRoot(t *testing.T) string {
 	writeFile(t, root, "schemas/evidence-graph/conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "conformance/positive/ok.json", validPolicyDocument)
 	writeFile(t, root, "conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/positive/ok.json", validPackDescriptor)
+	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "capabilities/infrastructure/opentofu/v1/pack.json", validPackDescriptor)
 	for _, ecosystem := range []string{"go", "npm", "python"} {
 		writeFile(t, root, "policies/dependency/"+ecosystem+"/policy.json", validPolicyDocument)
 	}
@@ -134,6 +159,8 @@ func TestRunFailsWhenShippedPolicyIsMissing(t *testing.T) {
 	writeFile(t, root, "schemas/evidence-graph/conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "conformance/positive/ok.json", validPolicyDocument)
 	writeFile(t, root, "conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/positive/ok.json", validPackDescriptor)
+	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/negative/bad.json", `{"schema": "nope"}`)
 
 	var stdout, stderr bytes.Buffer
 	code := run(nil, root, &stdout, &stderr)
@@ -151,6 +178,8 @@ func TestRunFailsWhenShippedPolicyIsInvalid(t *testing.T) {
 	writeFile(t, root, "schemas/evidence-graph/conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "conformance/positive/ok.json", validPolicyDocument)
 	writeFile(t, root, "conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/positive/ok.json", validPackDescriptor)
+	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "policies/dependency/go/policy.json", `{"schema": "nope"}`)
 	writeFile(t, root, "policies/dependency/npm/policy.json", validPolicyDocument)
 	writeFile(t, root, "policies/dependency/python/policy.json", validPolicyDocument)
@@ -162,6 +191,51 @@ func TestRunFailsWhenShippedPolicyIsInvalid(t *testing.T) {
 	}
 	if !strings.Contains(stderr.String(), "not conformant") {
 		t.Fatalf("stderr = %q, want shipped policy conformance error", stderr.String())
+	}
+}
+
+func TestRunFailsWhenShippedPackIsMissing(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, root, "schemas/evidence-graph/conformance/positive/ok.json", validVectorDocument)
+	writeFile(t, root, "schemas/evidence-graph/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "conformance/positive/ok.json", validPolicyDocument)
+	writeFile(t, root, "conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/positive/ok.json", validPackDescriptor)
+	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/negative/bad.json", `{"schema": "nope"}`)
+	for _, ecosystem := range []string{"go", "npm", "python"} {
+		writeFile(t, root, "policies/dependency/"+ecosystem+"/policy.json", validPolicyDocument)
+	}
+
+	var stdout, stderr bytes.Buffer
+	code := run(nil, root, &stdout, &stderr)
+	if code != 1 {
+		t.Fatalf("run() = %d, want 1", code)
+	}
+	if !strings.Contains(stderr.String(), "read shipped capability pack") {
+		t.Fatalf("stderr = %q, want shipped pack read error", stderr.String())
+	}
+}
+
+func TestRunFailsWhenShippedPackIsInvalid(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, root, "schemas/evidence-graph/conformance/positive/ok.json", validVectorDocument)
+	writeFile(t, root, "schemas/evidence-graph/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "conformance/positive/ok.json", validPolicyDocument)
+	writeFile(t, root, "conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/positive/ok.json", validPackDescriptor)
+	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "capabilities/infrastructure/opentofu/v1/pack.json", `{"schema": "nope"}`)
+	for _, ecosystem := range []string{"go", "npm", "python"} {
+		writeFile(t, root, "policies/dependency/"+ecosystem+"/policy.json", validPolicyDocument)
+	}
+
+	var stdout, stderr bytes.Buffer
+	code := run(nil, root, &stdout, &stderr)
+	if code != 1 {
+		t.Fatalf("run() = %d, want 1", code)
+	}
+	if !strings.Contains(stderr.String(), "shipped capability pack") || !strings.Contains(stderr.String(), "not conformant") {
+		t.Fatalf("stderr = %q, want shipped pack conformance error", stderr.String())
 	}
 }
 
