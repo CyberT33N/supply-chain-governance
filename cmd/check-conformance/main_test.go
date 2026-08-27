@@ -55,6 +55,26 @@ var validPackDescriptor = `{
   ]
 }`
 
+var validBootstrapPackDescriptor = `{
+  "schema": "capability-pack/v1",
+  "capability": "cosign",
+  "area": "security",
+  "version": 1,
+  "summary": "Signature verifier bootstrap.",
+  "provisioning": {
+    "kind": "recipe",
+    "tool": "cosign",
+    "version": "3.0.6",
+    "environment": {},
+    "artifacts": {
+      "linux-amd64": {"url": "https://example.invalid/cosign-linux-amd64", "sha256": "` + testDigestB + `"}
+    }
+  },
+  "assertions": [
+    {"name": "cosign-version", "command": "cosign", "args": ["version"], "expect": "v3.0.6"}
+  ]
+}`
+
 func restoreSeams(t *testing.T) {
 	t.Helper()
 	originalExit := exitProcess
@@ -87,7 +107,10 @@ func validVectorRoot(t *testing.T) string {
 	writeFile(t, root, "conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/positive/ok.json", validPackDescriptor)
 	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "capabilities/security/cosign/conformance/positive/ok.json", validBootstrapPackDescriptor)
+	writeFile(t, root, "capabilities/security/cosign/conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "capabilities/infrastructure/opentofu/v1/pack.json", validPackDescriptor)
+	writeFile(t, root, "capabilities/security/cosign/v1/pack.json", validBootstrapPackDescriptor)
 	for _, ecosystem := range []string{"go", "npm", "python"} {
 		writeFile(t, root, "policies/dependency/"+ecosystem+"/policy.json", validPolicyDocument)
 	}
@@ -161,6 +184,8 @@ func TestRunFailsWhenShippedPolicyIsMissing(t *testing.T) {
 	writeFile(t, root, "conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/positive/ok.json", validPackDescriptor)
 	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "capabilities/security/cosign/conformance/positive/ok.json", validBootstrapPackDescriptor)
+	writeFile(t, root, "capabilities/security/cosign/conformance/negative/bad.json", `{"schema": "nope"}`)
 
 	var stdout, stderr bytes.Buffer
 	code := run(nil, root, &stdout, &stderr)
@@ -180,6 +205,8 @@ func TestRunFailsWhenShippedPolicyIsInvalid(t *testing.T) {
 	writeFile(t, root, "conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/positive/ok.json", validPackDescriptor)
 	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "capabilities/security/cosign/conformance/positive/ok.json", validBootstrapPackDescriptor)
+	writeFile(t, root, "capabilities/security/cosign/conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "policies/dependency/go/policy.json", `{"schema": "nope"}`)
 	writeFile(t, root, "policies/dependency/npm/policy.json", validPolicyDocument)
 	writeFile(t, root, "policies/dependency/python/policy.json", validPolicyDocument)
@@ -202,6 +229,8 @@ func TestRunFailsWhenShippedPackIsMissing(t *testing.T) {
 	writeFile(t, root, "conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/positive/ok.json", validPackDescriptor)
 	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "capabilities/security/cosign/conformance/positive/ok.json", validBootstrapPackDescriptor)
+	writeFile(t, root, "capabilities/security/cosign/conformance/negative/bad.json", `{"schema": "nope"}`)
 	for _, ecosystem := range []string{"go", "npm", "python"} {
 		writeFile(t, root, "policies/dependency/"+ecosystem+"/policy.json", validPolicyDocument)
 	}
@@ -224,6 +253,8 @@ func TestRunFailsWhenShippedPackIsInvalid(t *testing.T) {
 	writeFile(t, root, "conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/positive/ok.json", validPackDescriptor)
 	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeFile(t, root, "capabilities/security/cosign/conformance/positive/ok.json", validBootstrapPackDescriptor)
+	writeFile(t, root, "capabilities/security/cosign/conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "capabilities/infrastructure/opentofu/v1/pack.json", `{"schema": "nope"}`)
 	for _, ecosystem := range []string{"go", "npm", "python"} {
 		writeFile(t, root, "policies/dependency/"+ecosystem+"/policy.json", validPolicyDocument)

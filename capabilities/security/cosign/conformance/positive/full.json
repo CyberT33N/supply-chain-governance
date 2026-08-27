@@ -1,0 +1,30 @@
+{
+  "schema": "capability-pack/v1",
+  "capability": "cosign",
+  "area": "security",
+  "version": 1,
+  "summary": "Fully populated verifier bootstrap descriptor exercising every bound platform.",
+  "provisioning": {
+    "kind": "recipe",
+    "tool": "cosign",
+    "version": "3.0.6",
+    "environment": {},
+    "artifacts": {
+      "linux-amd64": {
+        "url": "https://example.invalid/cosign-linux-amd64",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "windows-amd64": {
+        "url": "https://example.invalid/cosign-windows-amd64.exe",
+        "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "darwin-arm64": {
+        "url": "https://example.invalid/cosign-darwin-arm64",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      }
+    }
+  },
+  "assertions": [
+    {"name": "cosign-version", "command": "cosign", "args": ["version"], "expect": "v3.0.6"}
+  ]
+}
