@@ -1,0 +1,22 @@
+{
+  "schema": "capability-pack/v1",
+  "capability": "cosign",
+  "area": "security",
+  "version": 1,
+  "summary": "A descriptor with an unpinned tool version.",
+  "provisioning": {
+    "kind": "recipe",
+    "tool": "cosign",
+    "version": "latest",
+    "environment": {},
+    "artifacts": {
+      "linux-amd64": {
+        "url": "https://example.invalid/cosign-linux-amd64",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "assertions": [
+    {"name": "cosign-version", "command": "cosign", "args": ["version"], "expect": "v3.0.6"}
+  ]
+}

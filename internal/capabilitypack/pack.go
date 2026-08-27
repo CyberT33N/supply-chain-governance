@@ -37,7 +37,10 @@ var (
 	digestPattern      = regexp.MustCompile(`^[0-9a-f]{64}$`)
 )
 
-// Descriptor is one versioned capability pack descriptor.
+// Descriptor is one versioned capability pack descriptor. The discovery and
+// gates surfaces are nil for the engine-bound signature verifier bootstrap
+// pack, whose proof runs inside provisioning; every gate-carrying pack binds
+// the gates, and a per-root gate never exists without the discovery surface.
 type Descriptor struct {
 	Schema       string       `json:"schema"`
 	Capability   string       `json:"capability"`
@@ -45,7 +48,7 @@ type Descriptor struct {
 	Version      int          `json:"version"`
 	Summary      string       `json:"summary"`
 	Provisioning Provisioning `json:"provisioning"`
-	Discovery    Discovery    `json:"discovery"`
+	Discovery    *Discovery   `json:"discovery"`
 	Assertions   []Assertion  `json:"assertions"`
 	Gates        []Gate       `json:"gates"`
 }
@@ -141,21 +144,26 @@ func (d Descriptor) Validate() error {
 	if err := d.Provisioning.validate(); err != nil {
 		return fmt.Errorf("provisioning: %w", err)
 	}
-	if err := d.Discovery.validate(); err != nil {
-		return fmt.Errorf("discovery: %w", err)
+	if d.Discovery != nil {
+		if err := d.Discovery.validate(); err != nil {
+			return fmt.Errorf("discovery: %w", err)
+		}
 	}
 	for index, assertion := range d.Assertions {
 		if err := assertion.validate(); err != nil {
 			return fmt.Errorf("assertions[%d]: %w", index, err)
 		}
 	}
-	if len(d.Gates) == 0 {
-		return errors.New("gates must not be empty")
+	if d.Gates != nil && len(d.Gates) == 0 {
+		return errors.New("gates must not be empty when the gates field is present")
 	}
 	seen := make(map[string]struct{}, len(d.Gates))
 	for index, gate := range d.Gates {
 		if err := gate.validate(d.Capability); err != nil {
 			return fmt.Errorf("gates[%d]: %w", index, err)
+		}
+		if gate.Scope == ScopePerRoot && d.Discovery == nil {
+			return fmt.Errorf("gates[%d]: the per-root scope requires the discovery surface", index)
 		}
 		if _, found := seen[gate.Name]; found {
 			return fmt.Errorf("gates[%d]: gate name %q is not unique", index, gate.Name)

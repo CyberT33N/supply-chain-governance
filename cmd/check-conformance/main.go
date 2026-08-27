@@ -58,14 +58,26 @@ func conformanceSets() []vectorSet {
 			parse:       dependencypolicy.ValidatePolicy,
 		},
 		{
-			name:        "capability-pack positive vectors",
+			name:        "capability-pack opentofu positive vectors",
 			directory:   "capabilities/infrastructure/opentofu/conformance/positive",
 			expectValid: true,
 			parse:       capabilitypack.ValidatePack,
 		},
 		{
-			name:        "capability-pack negative vectors",
+			name:        "capability-pack opentofu negative vectors",
 			directory:   "capabilities/infrastructure/opentofu/conformance/negative",
+			expectValid: false,
+			parse:       capabilitypack.ValidatePack,
+		},
+		{
+			name:        "capability-pack cosign positive vectors",
+			directory:   "capabilities/security/cosign/conformance/positive",
+			expectValid: true,
+			parse:       capabilitypack.ValidatePack,
+		},
+		{
+			name:        "capability-pack cosign negative vectors",
+			directory:   "capabilities/security/cosign/conformance/negative",
 			expectValid: false,
 			parse:       capabilitypack.ValidatePack,
 		},
@@ -77,7 +89,10 @@ func shippedPolicyEcosystems() []string {
 }
 
 func shippedPackDescriptors() []string {
-	return []string{"capabilities/infrastructure/opentofu/v1/pack.json"}
+	return []string{
+		"capabilities/infrastructure/opentofu/v1/pack.json",
+		"capabilities/security/cosign/v1/pack.json",
+	}
 }
 
 func run(arguments []string, root string, stdout io.Writer, stderr io.Writer) int {

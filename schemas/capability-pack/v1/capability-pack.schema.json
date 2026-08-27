@@ -2,10 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/t33n-software/supply-chain-governance/schemas/capability-pack/v1/capability-pack.schema.json",
   "title": "capability-pack/v1 document",
-  "description": "Canonical capability-pack/v1 descriptor: one versioned, schema-bound unit of shared gate behavior that tenants declare through the extends list of the quality-gate configuration seam. Provisioning is always a digest-verified recipe, and gate names are always prefixed by the capability.",
+  "description": "Canonical capability-pack/v1 descriptor: one versioned, schema-bound unit of shared gate behavior that tenants declare through the extends list of the quality-gate configuration seam. Provisioning is always a digest-verified recipe, and gate names are always prefixed by the capability. A pack without per-root gates may omit the discovery surface; the engine-bound signature verifier bootstrap pack is the single documented form that omits the gates surface, because its proof runs inside provisioning.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "capability", "area", "version", "summary", "provisioning", "discovery", "assertions", "gates"],
+  "required": ["schema", "capability", "area", "version", "summary", "provisioning", "assertions"],
   "properties": {
     "schema": {
       "const": "capability-pack/v1"
@@ -83,6 +83,7 @@
     },
     "discovery": {
       "type": "object",
+      "description": "How the pack finds its per-root work. A pack without per-root gates omits this surface; the executable validator rejects a per-root gate without it.",
       "additionalProperties": false,
       "required": ["roots", "excludeDirs"],
       "properties": {
@@ -136,7 +137,7 @@
     "gates": {
       "type": "array",
       "minItems": 1,
-      "description": "The pack's gates; every name is lowercase kebab prefixed by the capability.",
+      "description": "The pack's gates; every name is lowercase kebab prefixed by the capability. A present gates field binds at least one gate; the engine-bound signature verifier bootstrap pack is the single documented form that omits the field entirely.",
       "items": {
         "type": "object",
         "additionalProperties": false,

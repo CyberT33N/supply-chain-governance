@@ -1,0 +1,24 @@
+{
+  "schema": "capability-pack/v1",
+  "capability": "cosign",
+  "area": "security",
+  "version": 1,
+  "summary": "Duplicate gate names are rejected.",
+  "provisioning": {
+    "kind": "recipe",
+    "tool": "cosign",
+    "version": "3.0.6",
+    "environment": {},
+    "artifacts": {
+      "linux-amd64": {
+        "url": "https://example.invalid/cosign-linux-amd64",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "assertions": [],
+  "gates": [
+    {"name": "cosign-verify-blob", "command": "cosign", "args": ["verify-blob"], "scope": "repository"},
+    {"name": "cosign-verify-blob", "command": "cosign", "args": ["verify"], "scope": "repository"}
+  ]
+}

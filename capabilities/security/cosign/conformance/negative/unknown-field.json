@@ -1,0 +1,23 @@
+{
+  "schema": "capability-pack/v1",
+  "capability": "cosign",
+  "area": "security",
+  "version": 1,
+  "summary": "A descriptor carrying an unknown field.",
+  "unknown": true,
+  "provisioning": {
+    "kind": "recipe",
+    "tool": "cosign",
+    "version": "3.0.6",
+    "environment": {},
+    "artifacts": {
+      "linux-amd64": {
+        "url": "https://example.invalid/cosign-linux-amd64",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "assertions": [
+    {"name": "cosign-version", "command": "cosign", "args": ["version"], "expect": "v3.0.6"}
+  ]
+}

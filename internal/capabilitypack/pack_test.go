@@ -65,6 +65,81 @@ func TestParseAcceptsTheValidDescriptor(t *testing.T) {
 	}
 }
 
+// The bootstrap form of the engine-bound signature verifier pack: the
+// install-proof assertion without the gates and discovery surfaces.
+var validBootstrapDescriptor = `{
+  "schema": "capability-pack/v1",
+  "capability": "cosign",
+  "area": "security",
+  "version": 1,
+  "summary": "Signature verifier bootstrap.",
+  "provisioning": {
+    "kind": "recipe",
+    "tool": "cosign",
+    "version": "3.0.6",
+    "environment": {},
+    "artifacts": {
+      "linux-amd64": {
+        "url": "https://example.invalid/cosign-linux-amd64",
+        "sha256": "` + strings.Repeat("b", 64) + `"
+      }
+    }
+  },
+  "assertions": [
+    {"name": "cosign-version", "command": "cosign", "args": ["version"], "expect": "v3.0.6"}
+  ]
+}`
+
+func TestParseAcceptsTheBootstrapVerifierForm(t *testing.T) {
+	t.Parallel()
+
+	descriptor, err := Parse([]byte(validBootstrapDescriptor))
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	if descriptor.Gates != nil || descriptor.Discovery != nil {
+		t.Fatalf("Parse() = %#v, want the bootstrap form without the gates and discovery surfaces", descriptor)
+	}
+	if len(descriptor.Assertions) != 1 || descriptor.Assertions[0].Name != "cosign-version" {
+		t.Fatalf("Parse() assertions = %#v", descriptor.Assertions)
+	}
+}
+
+func TestParseAcceptsRepositoryScopeGatesWithoutDiscovery(t *testing.T) {
+	t.Parallel()
+
+	contents := `{
+  "schema": "capability-pack/v1",
+  "capability": "cosign",
+  "area": "security",
+  "version": 1,
+  "summary": "A repository-scope gate needs no discovery surface.",
+  "provisioning": {
+    "kind": "recipe",
+    "tool": "cosign",
+    "version": "3.0.6",
+    "environment": {},
+    "artifacts": {
+      "linux-amd64": {
+        "url": "https://example.invalid/cosign-linux-amd64",
+        "sha256": "` + strings.Repeat("b", 64) + `"
+      }
+    }
+  },
+  "assertions": [],
+  "gates": [
+    {"name": "cosign-verify", "command": "cosign", "args": ["verify"], "scope": "repository"}
+  ]
+}`
+	descriptor, err := Parse([]byte(contents))
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	if descriptor.Discovery != nil || len(descriptor.Gates) != 1 {
+		t.Fatalf("Parse() = %#v", descriptor)
+	}
+}
+
 func TestParseRejectsNonConformingDocuments(t *testing.T) {
 	t.Parallel()
 
@@ -178,6 +253,23 @@ func TestParseRejectsNonConformingDocuments(t *testing.T) {
 			name:     "discovery empty glob",
 			contents: mutate(t, `"fileGlob": "**/*.tf"`, `"fileGlob": " "`),
 			want:     "roots.fileGlob",
+		},
+		{
+			name: "discovery present but empty",
+			contents: mutate(t, `"discovery": {
+    "roots": {"fileGlob": "**/*.tf"},
+    "excludeDirs": [".terraform", "dist"]
+  }`, `"discovery": {}`),
+			want: "roots.fileGlob",
+		},
+		{
+			name: "per-root gate without discovery",
+			contents: mutate(t, `  "discovery": {
+    "roots": {"fileGlob": "**/*.tf"},
+    "excludeDirs": [".terraform", "dist"]
+  },
+`, ""),
+			want: "per-root scope requires the discovery surface",
 		},
 		{
 			name:     "discovery duplicate exclude",

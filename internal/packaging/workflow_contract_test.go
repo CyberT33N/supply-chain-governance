@@ -275,6 +275,8 @@ func TestConformanceVectorsAndShippedPoliciesArePresent(t *testing.T) {
 		repositoryPath("conformance", "negative"),
 		repositoryPath("capabilities", "infrastructure", "opentofu", "conformance", "positive"),
 		repositoryPath("capabilities", "infrastructure", "opentofu", "conformance", "negative"),
+		repositoryPath("capabilities", "security", "cosign", "conformance", "positive"),
+		repositoryPath("capabilities", "security", "cosign", "conformance", "negative"),
 	} {
 		entries, err := os.ReadDir(directory)
 		if err != nil {
@@ -292,9 +294,13 @@ func TestConformanceVectorsAndShippedPoliciesArePresent(t *testing.T) {
 		}
 	}
 
-	packDescriptor := repositoryPath("capabilities", "infrastructure", "opentofu", "v1", "pack.json")
-	if _, err := os.Stat(packDescriptor); err != nil {
-		t.Fatalf("missing shipped capability pack descriptor %q: %v", packDescriptor, err)
+	for _, descriptor := range []string{
+		repositoryPath("capabilities", "infrastructure", "opentofu", "v1", "pack.json"),
+		repositoryPath("capabilities", "security", "cosign", "v1", "pack.json"),
+	} {
+		if _, err := os.Stat(descriptor); err != nil {
+			t.Fatalf("missing shipped capability pack descriptor %q: %v", descriptor, err)
+		}
 	}
 }
 
