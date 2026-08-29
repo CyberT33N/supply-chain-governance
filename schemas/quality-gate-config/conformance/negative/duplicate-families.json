@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 4,
+  "toolchain": { "language": "go", "version": "1.26.6" },
+  "defaults": {
+    "includeFamilies": ["feature", "feature"]
+  },
+  "gates": [
+    { "name": "full-local-build", "command": "go" }
+  ]
+}

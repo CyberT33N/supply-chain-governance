@@ -11,6 +11,7 @@ import (
 	"github.com/t33n-software/supply-chain-governance/internal/capabilitypack"
 	"github.com/t33n-software/supply-chain-governance/internal/dependencypolicy"
 	"github.com/t33n-software/supply-chain-governance/internal/evidencegraph"
+	"github.com/t33n-software/supply-chain-governance/internal/qualitygateconfig"
 )
 
 var (
@@ -80,6 +81,18 @@ func conformanceSets() []vectorSet {
 			directory:   "capabilities/security/cosign/conformance/negative",
 			expectValid: false,
 			parse:       capabilitypack.ValidatePack,
+		},
+		{
+			name:        "quality-gate-config positive vectors",
+			directory:   "schemas/quality-gate-config/conformance/positive",
+			expectValid: true,
+			parse:       qualitygateconfig.ValidateConfig,
+		},
+		{
+			name:        "quality-gate-config negative vectors",
+			directory:   "schemas/quality-gate-config/conformance/negative",
+			expectValid: false,
+			parse:       qualitygateconfig.ValidateConfig,
 		},
 	}
 }

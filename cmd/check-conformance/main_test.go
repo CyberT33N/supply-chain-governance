@@ -75,6 +75,14 @@ var validBootstrapPackDescriptor = `{
   ]
 }`
 
+var validConfigDocument = `{
+  "schemaVersion": 4,
+  "toolchain": {"language": "go", "version": "1.26.6"},
+  "gates": [
+    {"name": "full-local-build", "command": "go", "args": ["tool", "-modfile", "tools/go.mod", "quality-gate"], "timeout": "15m"}
+  ]
+}`
+
 func restoreSeams(t *testing.T) {
 	t.Helper()
 	originalExit := exitProcess
@@ -98,6 +106,12 @@ func writeFile(t *testing.T, root string, name string, content string) {
 	}
 }
 
+func writeConfigVectors(t *testing.T, root string) {
+	t.Helper()
+	writeFile(t, root, "schemas/quality-gate-config/conformance/positive/ok.json", validConfigDocument)
+	writeFile(t, root, "schemas/quality-gate-config/conformance/negative/bad.json", `{"schemaVersion": 3}`)
+}
+
 func validVectorRoot(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
@@ -109,6 +123,7 @@ func validVectorRoot(t *testing.T) string {
 	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "capabilities/security/cosign/conformance/positive/ok.json", validBootstrapPackDescriptor)
 	writeFile(t, root, "capabilities/security/cosign/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeConfigVectors(t, root)
 	writeFile(t, root, "capabilities/infrastructure/opentofu/v1/pack.json", validPackDescriptor)
 	writeFile(t, root, "capabilities/security/cosign/v1/pack.json", validBootstrapPackDescriptor)
 	for _, ecosystem := range []string{"go", "npm", "python"} {
@@ -186,6 +201,7 @@ func TestRunFailsWhenShippedPolicyIsMissing(t *testing.T) {
 	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "capabilities/security/cosign/conformance/positive/ok.json", validBootstrapPackDescriptor)
 	writeFile(t, root, "capabilities/security/cosign/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeConfigVectors(t, root)
 
 	var stdout, stderr bytes.Buffer
 	code := run(nil, root, &stdout, &stderr)
@@ -207,6 +223,7 @@ func TestRunFailsWhenShippedPolicyIsInvalid(t *testing.T) {
 	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "capabilities/security/cosign/conformance/positive/ok.json", validBootstrapPackDescriptor)
 	writeFile(t, root, "capabilities/security/cosign/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeConfigVectors(t, root)
 	writeFile(t, root, "policies/dependency/go/policy.json", `{"schema": "nope"}`)
 	writeFile(t, root, "policies/dependency/npm/policy.json", validPolicyDocument)
 	writeFile(t, root, "policies/dependency/python/policy.json", validPolicyDocument)
@@ -231,6 +248,7 @@ func TestRunFailsWhenShippedPackIsMissing(t *testing.T) {
 	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "capabilities/security/cosign/conformance/positive/ok.json", validBootstrapPackDescriptor)
 	writeFile(t, root, "capabilities/security/cosign/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeConfigVectors(t, root)
 	for _, ecosystem := range []string{"go", "npm", "python"} {
 		writeFile(t, root, "policies/dependency/"+ecosystem+"/policy.json", validPolicyDocument)
 	}
@@ -255,6 +273,7 @@ func TestRunFailsWhenShippedPackIsInvalid(t *testing.T) {
 	writeFile(t, root, "capabilities/infrastructure/opentofu/conformance/negative/bad.json", `{"schema": "nope"}`)
 	writeFile(t, root, "capabilities/security/cosign/conformance/positive/ok.json", validBootstrapPackDescriptor)
 	writeFile(t, root, "capabilities/security/cosign/conformance/negative/bad.json", `{"schema": "nope"}`)
+	writeConfigVectors(t, root)
 	writeFile(t, root, "capabilities/infrastructure/opentofu/v1/pack.json", `{"schema": "nope"}`)
 	for _, ecosystem := range []string{"go", "npm", "python"} {
 		writeFile(t, root, "policies/dependency/"+ecosystem+"/policy.json", validPolicyDocument)

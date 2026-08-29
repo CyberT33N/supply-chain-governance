@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 4,
+  "toolchain": { "language": "go", "version": "1.26.6" },
+  "extends": ["opentofu@1"],
+  "defaults": {
+    "includeFamilies": ["feature", "fix", "docs", "refactor", "chore", "test", "perf", "hotfix"]
+  },
+  "gates": [
+    {
+      "name": "full-local-build",
+      "command": "go",
+      "args": ["tool", "-modfile", "tools/go.mod", "quality-gate"],
+      "timeout": "15m",
+      "workingDirectory": "build",
+      "includeFamilies": ["feature"],
+      "excludeFamilies": ["scratch"]
+    }
+  ],
+  "project": {
+    "binaries": [
+      { "package": "./cmd/build", "smoke": ["--version"] }
+    ],
+    "fuzz": [
+      { "package": "./internal/qualitygateconfig", "target": "FuzzParseConfig", "time": "50000x" }
+    ]
+  }
+}

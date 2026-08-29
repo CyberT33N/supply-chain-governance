@@ -56,6 +56,11 @@
         "package": "./internal/capabilitypack",
         "target": "FuzzParsePack",
         "time": "50000x"
+      },
+      {
+        "package": "./internal/qualitygateconfig",
+        "target": "FuzzParseConfig",
+        "time": "50000x"
       }
     ]
   }
