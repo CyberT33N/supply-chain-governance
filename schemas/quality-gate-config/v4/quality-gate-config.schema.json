@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/t33n-software/supply-chain-governance/schemas/quality-gate-config/v4/quality-gate-config.schema.json",
   "title": "quality-gate-config/v4 document",
-  "description": "Canonical quality-gate-config/v4 seam: the tenant's quality gate configuration with the language-keyed pinned toolchain identity, the capability-pack extends declaration, the branch-family scoped gates, and the optional project block. Exactly one schema version exists; earlier versions fail closed.",
+  "description": "Canonical quality-gate-config/v4 seam: the tenant's quality gate configuration with the language-keyed pinned toolchain identity, the capability-pack extends declaration, the branch-family scoped gates, and the optional project block. The defaults.includeFamilies block carries the canonical ticket-family set as the schema-owned default; a declared block is a named deviation. Exactly one schema version exists; earlier versions fail closed.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "toolchain", "gates"],
@@ -155,7 +155,9 @@
       "additionalProperties": false,
       "properties": {
         "includeFamilies": {
-          "$ref": "#/$defs/familyList"
+          "$ref": "#/$defs/familyList",
+          "default": ["feature", "fix", "docs", "refactor", "chore", "test", "perf", "hotfix"],
+          "description": "The tenant-wide include scope. When the block is omitted, the schema-owned canonical ticket-family default applies; a declared list is a named deviation and is never rewritten."
         },
         "excludeFamilies": {
           "$ref": "#/$defs/familyList"

@@ -277,6 +277,8 @@ func TestConformanceVectorsAndShippedPoliciesArePresent(t *testing.T) {
 		repositoryPath("capabilities", "infrastructure", "opentofu", "conformance", "negative"),
 		repositoryPath("capabilities", "security", "cosign", "conformance", "positive"),
 		repositoryPath("capabilities", "security", "cosign", "conformance", "negative"),
+		repositoryPath("schemas", "quality-gate-config", "conformance", "positive"),
+		repositoryPath("schemas", "quality-gate-config", "conformance", "negative"),
 	} {
 		entries, err := os.ReadDir(directory)
 		if err != nil {
@@ -342,6 +344,7 @@ func TestJSONSchemasStayInSyncWithValidators(t *testing.T) {
 	for _, required := range []string{
 		"quality-gate-config/v4", `"const": 4`, "language", "version", "extends",
 		"^[a-z0-9][a-z0-9-]*@[0-9]+$", "gates", "project", "scratch",
+		`"default": ["feature", "fix", "docs", "refactor", "chore", "test", "perf", "hotfix"]`,
 	} {
 		if !strings.Contains(configSchema, required) {
 			t.Fatalf("quality-gate-config.schema.json does not contain %q", required)

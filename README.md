@@ -20,8 +20,10 @@ The core owns:
 - positive and negative conformance vectors for every subject type;
 - the `dependency-policy/v1` admission and revocation policy format;
 - the centralized `quality-gate-config/v4` schema — the one seam definition
-  for every territory, with the language-keyed toolchain identity and the
-  capability-pack `extends` declaration;
+  for every territory, with the language-keyed toolchain identity, the
+  capability-pack `extends` declaration, and the schema-owned
+  `includeFamilies` default, proved by the reference decoder and the seam
+  conformance vectors;
 - the `capability-pack/v1` descriptor schema and the language-neutral
   capability registry under `capabilities/` (one definition for every
   territory, never copied or redefined);
@@ -50,9 +52,9 @@ Every executable Go package must reach exactly 100.0% statement coverage.
 metadata, the pinned build tool module, lint (staticcheck), unit tests,
 conformance vectors, exact 100% statement coverage, race detector, static
 analysis, fail-closed vulnerability analysis (govulncheck), fuzz smoke lanes
-for the strict evidence-graph, dependency-policy, and capability-pack
-parsers, Lefthook configuration validation, Linux/AMD64 build, and module
-provenance.
+for the strict evidence-graph, dependency-policy, capability-pack, and
+quality-gate-config parsers, Lefthook configuration validation, Linux/AMD64
+build, and module provenance.
 
 The Go toolchain is pinned exactly (`toolchain go1.26.6`,
 `GOTOOLCHAIN=local`); no lane downloads a toolchain at build time. CI re-runs
@@ -76,6 +78,8 @@ every shared-line change.
 - `schemas/dependency-policy/v1/` contains the portable policy schema.
 - `schemas/quality-gate-config/v4/` contains the centralized quality
   configuration seam schema.
+- `schemas/quality-gate-config/conformance/` contains the quality-gate-config
+  conformance vectors.
 - `schemas/capability-pack/v1/` contains the portable capability pack
   descriptor schema.
 - `capabilities/<area>/<capability>/` contains the language-neutral pack

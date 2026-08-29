@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 4,
+  "gates": [
+    { "name": "full-local-build", "command": "go" }
+  ]
+}
