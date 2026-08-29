@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -166,12 +167,49 @@ func TestModuleIdentityAndQualityContract(t *testing.T) {
 	}
 
 	quality := readRepositoryFile(t, "git-governance.quality.json")
-	for _, required := range []string{
-		"supply-chain-governance-source-quality",
-		"./cmd/build",
-	} {
-		if !strings.Contains(quality, required) {
-			t.Fatalf("git-governance.quality.json does not contain %q", required)
+	var qualityConfig struct {
+		SchemaVersion int `json:"schemaVersion"`
+		Gates         []struct {
+			Name    string   `json:"name"`
+			Command string   `json:"command"`
+			Args    []string `json:"args"`
+		} `json:"gates"`
+		Project struct {
+			Binaries []struct {
+				Package string `json:"package"`
+			} `json:"binaries"`
+		} `json:"project"`
+	}
+	if err := json.Unmarshal([]byte(quality), &qualityConfig); err != nil {
+		t.Fatalf("git-governance.quality.json is not valid JSON: %v", err)
+	}
+	if qualityConfig.SchemaVersion != 4 {
+		t.Fatalf("git-governance.quality.json carries schemaVersion %d, want 4", qualityConfig.SchemaVersion)
+	}
+	if len(qualityConfig.Gates) != 2 {
+		t.Fatalf("git-governance.quality.json carries %d gates, want the canonical gate chain plus the conformance project gate", len(qualityConfig.Gates))
+	}
+	if qualityConfig.Gates[0].Name != "supply-chain-governance-source-quality" ||
+		qualityConfig.Gates[0].Command != "go" ||
+		!slices.Equal(qualityConfig.Gates[0].Args, []string{"tool", "-modfile", "tools/go.mod", "quality-gate"}) {
+		t.Fatal("the first gate does not invoke the canonical gate chain through the tooling module pin")
+	}
+	if qualityConfig.Gates[1].Name != "conformance-vectors" ||
+		qualityConfig.Gates[1].Command != "go" ||
+		!slices.Equal(qualityConfig.Gates[1].Args, []string{"run", "-mod=readonly", "./cmd/check-conformance"}) {
+		t.Fatal("the second gate does not run the repository conformance harness")
+	}
+	if len(qualityConfig.Project.Binaries) != 1 || qualityConfig.Project.Binaries[0].Package != "./cmd/check-conformance" {
+		t.Fatal("the project binaries must carry only the conformance harness")
+	}
+	for _, forbidden := range []string{`"./cmd/build"`, `"./cmd/check-coverage"`, `"defaults"`} {
+		if strings.Contains(quality, forbidden) {
+			t.Fatalf("git-governance.quality.json still contains %s", forbidden)
+		}
+	}
+	for _, chainCopy := range []string{"cmd/build", "cmd/check-coverage"} {
+		if _, err := os.Stat(repositoryPath(filepath.FromSlash(chainCopy))); !os.IsNotExist(err) {
+			t.Fatalf("the repo-local gate chain copy %s must not exist", chainCopy)
 		}
 	}
 

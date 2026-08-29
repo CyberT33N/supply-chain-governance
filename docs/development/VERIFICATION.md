@@ -13,24 +13,28 @@ Run from the repository root with the pinned Go toolchain (`go 1.26`,
 gofmt
 go test ./...
 go run -mod=readonly ./cmd/check-conformance
-go run -mod=readonly ./cmd/check-coverage
-go run -mod=readonly ./cmd/build
+go tool -modfile tools/go.mod check-coverage
+go tool -modfile tools/go.mod quality-gate
 ```
 
-`cmd/build` is the full source-level gate: formatting, module checksums,
-module metadata, build tool download, build tool checksums, build tool
-metadata, lint (staticcheck), unit tests, conformance vectors, exact 100%
-statement coverage, race detector, static analysis, fail-closed
-vulnerability analysis (govulncheck), fuzz smoke lanes for the strict
-evidence-graph, dependency-policy, and capability-pack parsers, Lefthook
-configuration validation, Linux/AMD64 build, and module provenance.
+`quality-gate` executes the canonical gate chain of the go-quality-authority
+territory home through the pinned tooling module: formatting, module
+checksums, module metadata, build tool download, build tool checksums, build
+tool metadata, lint (staticcheck), unit tests, exact 100% statement coverage,
+race detector, static analysis, fail-closed vulnerability analysis
+(govulncheck), the registered fuzz smoke lanes for the strict evidence-graph,
+dependency-policy, capability-pack, and quality-gate-config parsers, Lefthook
+configuration validation, and native binary builds with smoke tests. The
+conformance harness runs as the named project gate.
 
 ## Build tooling
 
 Build tools live in the separate `tools/` module and are resolved through
 its own verified `go.mod` and committed `go.sum`; they never join the source
-module graph. The module pins `govulncheck`, `staticcheck`, and `lefthook`
-via the Go tool directive and shares the repository toolchain pin.
+module graph. The module pins the canonical territory tools (`quality-gate`,
+`check-coverage`), the home verifier (`verify-canonical`), `govulncheck`,
+`staticcheck`, and `lefthook` via the Go tool directive and shares the
+repository toolchain pin.
 
 ## Toolchain and vulnerability re-scans
 
