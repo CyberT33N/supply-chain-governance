@@ -42,19 +42,21 @@ The core never contains:
 gofmt
 go test ./...
 go run -mod=readonly ./cmd/check-conformance
-go run -mod=readonly ./cmd/check-coverage
-go run -mod=readonly ./cmd/build
+go tool -modfile tools/go.mod check-coverage
+go tool -modfile tools/go.mod quality-gate
 ```
 
 Every executable Go package must reach exactly 100.0% statement coverage.
 
-`cmd/build` is the full source-level gate: formatting, module checksums and
-metadata, the pinned build tool module, lint (staticcheck), unit tests,
-conformance vectors, exact 100% statement coverage, race detector, static
-analysis, fail-closed vulnerability analysis (govulncheck), fuzz smoke lanes
-for the strict evidence-graph, dependency-policy, capability-pack, and
-quality-gate-config parsers, Lefthook configuration validation, Linux/AMD64
-build, and module provenance.
+`quality-gate` runs the canonical gate chain of the go-quality-authority
+territory home through the pinned tooling module: formatting, module checksums
+and metadata, the pinned build tool module, lint (staticcheck), unit tests,
+exact 100% statement coverage, race detector, static analysis, fail-closed
+vulnerability analysis (govulncheck), the registered fuzz smoke lanes for the
+strict evidence-graph, dependency-policy, capability-pack, and
+quality-gate-config parsers, Lefthook configuration validation, and native
+binary builds with smoke tests. `cmd/check-conformance` is the repository's
+own conformance harness and runs as the named project gate.
 
 The Go toolchain is pinned exactly (`toolchain go1.26.6`,
 `GOTOOLCHAIN=local`); no lane downloads a toolchain at build time. CI re-runs
@@ -88,7 +90,8 @@ every shared-line change.
 - `conformance/` contains the dependency-policy conformance vectors.
 - `policies/dependency/` contains the shipped per-ecosystem policies.
 - `exceptions/` contains top-level time-bounded exception records.
-- `cmd/` contains the build, coverage, and conformance gate tooling.
+- `cmd/` contains the conformance gate tooling; the canonical gate chain is
+  referenced through the `tools/` module pin.
 - `internal/` contains the validators and whitebox contract tests.
 - `repo-bindings.json` binds the canonical repo-surface adoption (home pin,
   fleet classes, caller and file hashes, config-seam and tool-catalog
